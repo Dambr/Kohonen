@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Сеть Кохонена</title>
+</head>
+<body>
+	<div id = "text" style="display: none;"><%= array %></div>
+	<div id = "size" style="display: none;"><%= size %></div>
+	<table id = "table"></table>
+	<div id = "inputs">
+		<input type="range" id = "temperature" min = "0" max = "30" step = "1" onchange="temperatureChange()">
+		<div id = "temperatureText"></div><br />
+		<input type="range" id = "speed" min = "60" max = "275" step = "1" onchange="speedChange()">
+		<div id = "speedText"></div><br />
+		<input type="range" id = "pressure" min = "960" max = "1040" step = "1" onchange="pressureChange()">
+		<div id = "pressureText"></div><br />
+		<input type="range" id = "accelerometer" min = "0" max = "10" step = "1" onchange="accelerometerChange()">
+		<div id = "accelerometerText"></div><br />
+		<button onclick="projection({
+			t: document.getElementById('temperature').value,
+			s: document.getElementById('speed').value,
+			p: document.getElementById('pressure').value,
+			a: document.getElementById('accelerometer').value})">
+			Определить
+		</button>
+	</div>
+	<script type="text/javascript">
+		function temperatureChange(){
+			document.getElementById("temperatureText").textContent = document.getElementById("temperature").value;
+		}
+		temperatureChange();
+		function speedChange(){
+			document.getElementById("speedText").textContent = document.getElementById("speed").value;
+		}
+		speedChange();
+		function pressureChange(){
+			document.getElementById("pressureText").textContent = document.getElementById("pressure").value;
+		}
+		pressureChange();
+		function accelerometerChange(){
+			document.getElementById("accelerometerText").textContent = document.getElementById("accelerometer").value;
+		}
+		accelerometerChange();
+		
+
+
+		let text = JSON.parse(document.getElementById("text").textContent);
+		let size = Number(document.getElementById("size").textContent);
+
+		function getTdIndex(i, j){
+			return size * i + j;
+		}
+		function getColor(r, g, b){
+			return 'rgb(' + r + ',' + g + ',' + b + ')';
+		}
+		function drawTdColor(i, j, color){
+			document.getElementsByTagName('td')[getTdIndex(i, j)].style.backgroundColor = color;
+		}
+		function getDistance(vector1, vector2){
+			let distance = 0;
+			distance += Math.pow((vector1.t - vector2.t), 2);
+			distance += Math.pow((vector1.s - vector2.s), 2);
+			distance += Math.pow((vector1.p - vector2.p), 2);
+			distance += Math.pow((vector1.a - vector2.a), 2);
+			return distance;
+		}
+		function projection(vector){
+			for (let i = 0; i < td.length; i ++){
+				document.getElementsByTagName('td')[i].style.borderColor = 'black';
+			}
+			let distances = [];
+			let koord     = [];
+			for (let i = 0; i < size; i ++){
+				for (let j = 0; j < size; j ++){
+					distances.push(getDistance(vector, td[getTdIndex(i, j)]));
+					koord.push([i, j]);
+				}
+			}
+			let minDistance = Math.min(...distances);
+			let minKoord    = koord[distances.indexOf(minDistance)];
+			document.getElementsByTagName('td')[getTdIndex(...minKoord)].style.borderColor = 'white';
+		}
+
+		// Создаем поле и инициализируем его
+		let td = [];
+		for (let i = 0; i < size; i ++){
+			let tr = document.createElement('tr');
+			for (let j = 0; j < size; j ++){
+				td.push({
+					element: document.createElement('td'),
+					t: 0,		// Температура (С)
+					s: 0,		// Скорость (м/с)
+					p: 0,		// Давление (мбар), норма = 986
+					a: 0,		// Перегрузка (g)
+					r: 255,		// Изначально все поля белого цвета
+					g: 255,		//
+					b: 255		//
+				});
+				tr.appendChild(td[td.length - 1].element);
+			}
+			document.getElementById('table').appendChild(tr);
+		}
+
+		for (let i = 0; i < size; i ++){
+			for (let j = 0; j < size; j ++){
+				td[text[getTdIndex(i, j)].id].t = text[getTdIndex(i, j)].t;
+				td[text[getTdIndex(i, j)].id].s = text[getTdIndex(i, j)].s;
+				td[text[getTdIndex(i, j)].id].p = text[getTdIndex(i, j)].p;
+				td[text[getTdIndex(i, j)].id].a = text[getTdIndex(i, j)].a;
+				td[text[getTdIndex(i, j)].id].r = text[getTdIndex(i, j)].r;
+				td[text[getTdIndex(i, j)].id].g = text[getTdIndex(i, j)].g;
+				td[text[getTdIndex(i, j)].id].b = text[getTdIndex(i, j)].b;
+				document.getElementsByTagName('td')[text[getTdIndex(i, j)].id].title = 't: ' + text[getTdIndex(i, j)].t + '\n' + 's: ' + text[getTdIndex(i, j)].s + '\n' + 'p: ' + text[getTdIndex(i, j)].p + '\n' + 'a: ' + text[getTdIndex(i, j)].a;
+			}
+		}
+
+		// Покраска поля
+		for (let i = 0; i < size; i ++){
+			for (let j = 0; j < size; j ++){
+				drawTdColor(i, j, getColor(td[getTdIndex(i, j)].r, td[getTdIndex(i, j)].g, td[getTdIndex(i, j)].b));
+			}
+		}
+				
+	</script>
+	<style type="text/css">
+		td{
+			width: 20px;
+			height: 20px;
+			border-style: solid;
+		}
+		div{
+			display: inline-block;
+		}
+		#table{
+			display: inline-block;
+		}
+		#inputs{
+			display: inline-block;
+			width: 600px;
+			vertical-align: top;
+			margin-left: 100px;
+		}
+		#inputs input{
+			margin-bottom: 20px;
+			display: inline-block;
+			vertical-align: top;
+		}
+		#temperatureText::before{
+			content: "Температура в салоне: ";
+		}
+		#temperatureText::after{
+			content: " С";
+		}
+		#speedText::before{
+			content: "Скорость: ";
+		}
+		#speedText::after{
+			content: " м/с";
+		}
+		#pressureText::before{
+			content: "Давление в салоне: ";
+		}
+		#pressureText::after{
+			content: " мбар";
+		}
+		#accelerometerText::before{
+			content: "Перегрузка: ";
+		}
+		#accelerometerText::after{
+			content: " g";
+		}
+	</style>
+</body>
+</html>

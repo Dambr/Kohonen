@@ -1,0 +1,21 @@
+{
+	"size" : 20,
+	"countOfIterations": 30000,
+	"L0": 0.8,
+	"temperature": {
+		"min": 0,
+		"max": 30
+	},
+	"speed": {
+		"min": 60,
+		"max": 275
+	},
+	"pressure": {
+		"min": 960,
+		"max": 1040
+	},
+	"accelerometer": {
+		"min": 0,
+		"max": 10
+	}
+}
