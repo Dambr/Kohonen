@@ -5,22 +5,22 @@
 	"sigma0": 1,
 	"parameters": [
 		{
-			"name": "Temperature",
+			"name": "Температура",
 			"min": 0,
 			"max": 30
 		},
 		{
-			"name": "Speed",
+			"name": "Скорость",
 			"min": 60,
 			"max": 275
 		},
 		{
-			"name": "Pressure",
+			"name": "Давление",
 			"min": 960,
 			"max": 1040
 		},
 		{
-			"name": "Accelerometer",
+			"name": "Перегрузка",
 			"min": 0,
 			"max": 5
 		}
