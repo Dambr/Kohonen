@@ -23,25 +23,53 @@ CREATE TABLE `test` (
   `b` double NOT NULL
 );
 */
-let size = parameters.size;
+let size = parameters.size; // Свойство объекта
+let countStb = parameters.parameters.length // Количество столбцов в таблице базы
+let stb = []; // Критерии создания базы в таблице базы
+let names = [];
+for (let i = 0; i < countStb; i ++){
+	stb.push(parameters.parameters[i].name + " double NOT NULL");
+	names.push(parameters.parameters[i].name);
+}
+
 
 new Promise(function(response, reject){
-	connection.query("TRUNCATE TABLE test", function(err, res){
+	connection.query("DROP TABLE test", function(err, res){
 		if (err) throw err;
-		response();
+		console.log("\t\t\tПрежние данные стерты");
+		connection.query("CREATE TABLE test(" +
+			"id int(11) NOT NULL, " +
+			stb.join(", ") +
+			", r double NOT NULL" +
+			", g double NOT NULL" +
+			", b double NOT NULL" + 
+			")",
+		function(err, res){
+			if (err) throw err;
+			response();
+		});
 	});
 })
 .then(
 	() => {
+		console.log("\t\t\tФормат новых данных сконфигурирован");
 		main();
 	}
 )
 .then(
 	() => {
 		for (let i = 0; i < td.length; i ++){
-			connection.query("INSERT INTO test VALUES(" + td[i].id + "," + td[i].t + "," + td[i].s + "," + td[i].p + "," + td[i].a + "," + td[i].r + "," + td[i].g + "," + td[i].b + ")", function(err, res){
+			let values = [];
+			for (let key of names){
+				values.push(td[i][key]);
+			}
+			connection.query("INSERT INTO test VALUES(" + td[i].id + "," + values.join(",") + "," + td[i].r + "," + td[i].g + "," + td[i].b + ")", function(err, res){
 				if (err) throw err;
-				console.log('Записано', 100 * (i + 1) / Math.pow(size, 2), '%');
+				process.stdout.write('\r\x1b[K');
+				process.stdout.write('\t\t\tЗаписано\t\t\t' + Math.round(100 * (i + 1) / Math.pow(size, 2)) + ' %');
+				if (i == td.length - 1){
+					console.log();
+				}
 			});
 		}
 	}
@@ -50,19 +78,15 @@ new Promise(function(response, reject){
 	() => {
 		connection.end();
 	}
-)
+);
 
 
 function main(){
 	// Размер сетки и кол-во итераций обучения
 	let countOfIterations = parameters.countOfIterations;
-
-	class Variant{
-		constructor(min, max){
-			this.min = min;
-			this.max = max;
-		}
-	}
+	// Начальные константы, влияюще на скорость и величину обучения
+	let sigma0 = parameters.sigma0;// size / 2;
+	let L0     = parameters.L0;
 
 	function randomInt(min, max) {
 		let rand = min + Math.random() * (max + 1 - min);
@@ -73,10 +97,9 @@ function main(){
 	}
 	function getDistance(vector1, vector2){
 		let distance = 0;
-		distance += Math.pow((vector1.t - vector2.t), 2);
-		distance += Math.pow((vector1.s - vector2.s), 2);
-		distance += Math.pow((vector1.p - vector2.p), 2);
-		distance += Math.pow((vector1.a - vector2.a), 2);
+		for (let key of names){
+			distance += Math.pow((vector1[key] - vector2[key]), 2);
+		}
 		return distance;
 	}
 	function getNewralDistance(koord1, koord2){
@@ -86,43 +109,34 @@ function main(){
 		return distance;
 	}
 
-
-	let t = parameters.temperature;
-	let s = parameters.speed;
-	let p = parameters.pressure;
-	let a = parameters.accelerometer;
-	// Начальные константы, влияюще на скорость и величину обучения
-	let sigma0 = size / 2;
-	let L0     = parameters.L0;
-
-
-
 	// Шаг 1
 	// Создаем поле и инициализируем его
 	// Глобальная переменная td
 	td = [];
 	for (let i = 0; i < size; i ++){
-		// let tr = document.createElement('tr');
 		for (let j = 0; j < size; j ++){
-			td.push({
-				// element: document.createElement('td'),
-				id: getTdIndex(i, j),
-				t: randomInt(t.min, t.max),		// Температура (С)
-				s: randomInt(s.min, s.max),		// Скорость (м/с)
-				p: randomInt(p.min, p.max),		// Давление (мбар), норма = 986
-				a: randomInt(a.min, a.max),		// Перегрузка (g)
-				r: 255,		// Доля красного
-				g: 255,		// Доля зеленого
-				b: 255		// Доля синего
-			});
+			let _td = {};
+			_td.id = getTdIndex(i, j);
+			for (let key = 0; key < parameters.parameters.length; key ++){
+				_td[parameters.parameters[key].name] = randomInt(parameters.parameters[key].min, parameters.parameters[key].max);
+			}
+			_td.r = 255;
+			_td.g = 255;
+			_td.b = 255;
+			td.push(_td);
 		}
 	}
+
 	let master_vector = require('./master_vector');
 
 	// Обучение сети
-
+	
 	for (let k = 1; k < countOfIterations; k ++){
-
+		process.stdout.write('\r\x1b[K');
+		process.stdout.write('\t\t\tОбучено\t\t\t\t' + Math.round(100 * (k + 1) / countOfIterations) + ' %');
+		if (k == countOfIterations - 1){
+			console.log();
+		}
 		let distances = [];
 		let koord     = [];
 		for (let i = 0; i < size; i ++){
@@ -135,18 +149,17 @@ function main(){
 		let minDistance = Math.min(...distances);
 		let minKoord    = koord[distances.indexOf(minDistance)];
 
-		let lamda = (k) / Math.log(sigma0);
-		let sigma = sigma0 * Math.exp( -(k) / lamda);
-		let L     = L0 * Math.exp( -(k) / lamda);
+		let lamda = k / Math.log(sigma0);
+		let sigma = sigma0 * Math.exp( -k / lamda);
+		let L     = L0 * Math.exp( -k / lamda);
 
 		for (let i = 0; i < size; i ++){
 			for (let j = 0; j < size; j ++){
 				let teta  = Math.exp( -getNewralDistance(minKoord, [i, j]) / (2 * Math.pow(sigma, 2)));
-				td[getTdIndex(i, j)].t += teta * L * (master_vector[k % master_vector.length].t - td[getTdIndex(i, j)].t);
-				td[getTdIndex(i, j)].s += teta * L * (master_vector[k % master_vector.length].s - td[getTdIndex(i, j)].s);
-				td[getTdIndex(i, j)].p += teta * L * (master_vector[k % master_vector.length].p - td[getTdIndex(i, j)].p);
-				td[getTdIndex(i, j)].a += teta * L * (master_vector[k % master_vector.length].a - td[getTdIndex(i, j)].a);
-				
+				for (let key of names){
+					td[getTdIndex(i, j)][key] += teta * L * (master_vector[k % master_vector.length][key] - td[getTdIndex(i, j)][key]);
+				}
+
 				td[getTdIndex(i, j)].r += teta * L * (master_vector[k % master_vector.length].r - td[getTdIndex(i, j)].r);
 				td[getTdIndex(i, j)].g += teta * L * (master_vector[k % master_vector.length].g - td[getTdIndex(i, j)].g);
 				td[getTdIndex(i, j)].b += teta * L * (master_vector[k % master_vector.length].b - td[getTdIndex(i, j)].b); 

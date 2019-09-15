@@ -1,21 +1,28 @@
 {
 	"size" : 20,
 	"countOfIterations": 30000,
-	"L0": 0.8,
-	"temperature": {
-		"min": 0,
-		"max": 30
-	},
-	"speed": {
-		"min": 60,
-		"max": 275
-	},
-	"pressure": {
-		"min": 960,
-		"max": 1040
-	},
-	"accelerometer": {
-		"min": 0,
-		"max": 10
-	}
+	"L0": 1,
+	"sigma0": 1,
+	"parameters": [
+		{
+			"name": "Temperature",
+			"min": 0,
+			"max": 30
+		},
+		{
+			"name": "Speed",
+			"min": 60,
+			"max": 275
+		},
+		{
+			"name": "Pressure",
+			"min": 960,
+			"max": 1040
+		},
+		{
+			"name": "Accelerometer",
+			"min": 0,
+			"max": 5
+		}
+	]
 }
