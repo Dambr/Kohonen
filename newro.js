@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-const parameters = require('./parameters');
+const parameters = require('./parameters.json');
 
 // Открываем соединение с сервером
 const connection = mysql.createConnection({
@@ -36,7 +36,7 @@ for (let i = 0; i < countStb; i ++){
 new Promise(function(response, reject){
 	connection.query("DROP TABLE test", function(err, res){
 		if (err) throw err;
-		console.log("\t\t\tПрежние данные стерты");
+		console.log("Прежние данные стерты");
 		connection.query("CREATE TABLE test(" +
 			"id int(11) NOT NULL, " +
 			stb.join(", ") +
@@ -52,7 +52,7 @@ new Promise(function(response, reject){
 })
 .then(
 	() => {
-		console.log("\t\t\tФормат новых данных сконфигурирован");
+		console.log("Формат новых данных сконфигурирован");
 		main();
 	}
 )
@@ -66,7 +66,7 @@ new Promise(function(response, reject){
 			connection.query("INSERT INTO test VALUES(" + td[i].id + "," + values.join(",") + "," + td[i].r + "," + td[i].g + "," + td[i].b + ")", function(err, res){
 				if (err) throw err;
 				process.stdout.write('\r\x1b[K');
-				process.stdout.write('\t\t\tЗаписано\t\t\t' + Math.round(100 * (i + 1) / Math.pow(size, 2)) + ' %');
+				process.stdout.write('Записано\t\t\t' + Math.round(100 * (i + 1) / Math.pow(size, 2)) + ' %');
 				if (i == td.length - 1){
 					console.log();
 				}
@@ -127,13 +127,13 @@ function main(){
 		}
 	}
 
-	let master_vector = require('./master_vector');
+	let master_vector = require('./master_vector.json');
 
 	// Обучение сети
 	
 	for (let k = 1; k < countOfIterations; k ++){
 		process.stdout.write('\r\x1b[K');
-		process.stdout.write('\t\t\tОбучено\t\t\t\t' + Math.round(100 * (k + 1) / countOfIterations) + ' %');
+		process.stdout.write('Обучено\t\t\t\t' + Math.round(100 * (k + 1) / countOfIterations) + ' %');
 		if (k == countOfIterations - 1){
 			console.log();
 		}
@@ -159,7 +159,7 @@ function main(){
 				for (let key of names){
 					td[getTdIndex(i, j)][key] += teta * L * (master_vector[k % master_vector.length][key] - td[getTdIndex(i, j)][key]);
 				}
-
+				
 				td[getTdIndex(i, j)].r += teta * L * (master_vector[k % master_vector.length].r - td[getTdIndex(i, j)].r);
 				td[getTdIndex(i, j)].g += teta * L * (master_vector[k % master_vector.length].g - td[getTdIndex(i, j)].g);
 				td[getTdIndex(i, j)].b += teta * L * (master_vector[k % master_vector.length].b - td[getTdIndex(i, j)].b); 

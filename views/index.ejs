@@ -9,35 +9,46 @@
 	<div id="text" style="display: none;"><%= array %></div>
 	<div id="size" style="display: none;"><%= size %></div>
 	<div id="parameters" style="display: none;"><%= parameters %></div>
-	<table id="table"></table>
-	<div id="input">
-		<table>
-			<% for (let i = 0; i < params.parameters.length; i ++){ %>
-				<tr>
-					<td><%= params.parameters[i].name %>: </td>
-					<td><input type="number" min="<%= params.parameters[i].min %>" max="<%= params.parameters[i].max %>" value="<%= params.parameters[i].min %>"></td>
-				</tr>
-			<% } %>
-		</table>
-		<br />
-		<center>
-			<button id="submit" onclick="
-			let vector = {};
-			for (let i = 0; i < names.length; i ++){
-				vector[names[i]] = document.getElementsByTagName('input')[i].value;
-			}
-			projection(vector);
-			">Определить состояние</button>
-		</center>
-	</div>
-	<table id = "master_vector">
-		<% for (let i = 0; i < master_vector.length; i ++) { %>
-			<tr>
-				<td style="border-style: none;"><%= master_vector[i].Type %></td>
-				<td style="background-color: rgb(<%= master_vector[i].r %>, <%= master_vector[i].g %>, <%= master_vector[i].b %>);"></td>
-			</tr>
-		<% } %>
-	</table>
+	<div id="solution" style="display: none;"><%= solution %></div>
+	<center>
+		<table id="table"></table>
+		<div style="vertical-align: top;">
+			<div id="input">
+				<table>
+					<% for (let i = 0; i < params.parameters.length; i ++){ %>
+						<tr>
+							<td><%= params.parameters[i].name %>: </td>
+							<td><input type="number" min="<%= params.parameters[i].min %>" max="<%= params.parameters[i].max %>" value="<%= params.parameters[i].min %>"></td>
+						</tr>
+					<% } %>
+				</table>
+				<br />
+				<center>
+					<button id="submit" onclick="
+						let vector = {};
+						for (let i = 0; i < names.length; i ++){
+							vector[names[i]] = document.getElementsByTagName('input')[i].value;
+						}
+						projection(vector);
+					">Определить состояние</button>
+					<br />
+				</center>
+			</div>
+			<table id = "master_vector">
+				<% for (let i = 0; i < master_vector.length; i ++) { %>
+					<tr>
+						<td style="border-style: none;"><%= master_vector[i].Type %></td>
+						<td style="background-color: rgb(<%= master_vector[i].r %>, <%= master_vector[i].g %>, <%= master_vector[i].b %>);"></td>
+					</tr>
+				<% } %>
+			</table>
+			<div id="output">
+				<label></label>
+				<br />
+				<label></label>
+			</div>
+		</div>
+	</center>
 	<script type="text/javascript" src="public/script/index.js"></script>
 </body>
 </html>

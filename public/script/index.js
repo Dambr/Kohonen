@@ -19,6 +19,74 @@ function getDistance(vector1, vector2){
 	}
 	return distance;
 }
+
+function getColorLength(color){
+	let len = 0;
+	for (let i = 0; i < color.length; i ++){
+		len += Math.pow(color[i], 2);
+	}
+	return Math.sqrt(len);
+}
+
+function getColorDeg(color1, color2){
+	let deg = 0;
+	for (let i = 0; i < color1.length; i ++){
+		deg += (color1[i] * color2[i]) / (getColorLength(color1) * getColorLength(color2));
+	}
+	return deg;
+}
+
+function getColorDistance(color1, color2){
+	let distance = 0;
+	for (let i = 0; i < color1.length; i ++){
+		distance += Math.pow((color1[i] - color2[i]), 2);
+	}
+	return Math.sqrt(distance);
+}
+
+function isEqualVectors(vector1, vector2){
+	let len = Math.max(vector1.length, vector2.length);
+	let sorted1 = vector1.slice().sort();
+	let sorted2 = vector2.slice().sort();
+	for (let i = 0; i < len; i ++){
+		if (sorted1[i] !== sorted2[i]){
+			return false;
+		}
+	}
+	return true;
+}
+
+function getColorVector(color){
+	let colorVector = color.replace('rgb(', '').replace(')', '').split(', ');
+	for (let i = 0; i < colorVector.length; i ++){
+		colorVector[i] = Number(colorVector[i]);
+	}
+	return colorVector;
+}
+
+function likeMasterVector(color){
+	let colorVector = getColorVector(color);
+	if (isEqualVectors(colorVector, [255, 255, 255])){
+		return 'Неопределено';
+	}
+	let table = document.getElementById('master_vector');
+	let tr = table.getElementsByTagName('tr');
+	let master_color = [];
+	for (let i = 0; i < tr.length; i ++){
+		master_color.push(getColorVector(document.getElementById('master_vector').getElementsByTagName('tr')[i].getElementsByTagName('td')[1].style.backgroundColor));
+	}
+	let distances = [];
+	for (let i = 0; i < tr.length; i ++){
+		distances.push(getColorDeg(colorVector, master_color[i]));
+	}
+	let minDistance = Math.max(...distances);
+	let minIndex    = distances.indexOf(minDistance);
+
+	console.log(color, distances);
+
+	return document.getElementById('master_vector').getElementsByTagName('tr')[minIndex].getElementsByTagName('td')[0].textContent;
+}
+
 function projection(vector){
 	for (let i = 0; i < td.length; i ++){
 		document.getElementsByTagName('td')[i].style.borderColor = 'black';
@@ -34,6 +102,28 @@ function projection(vector){
 	let minDistance = Math.min(...distances);
 	let minKoord    = koord[distances.indexOf(minDistance)];
 	document.getElementsByTagName('td')[getTdIndex(...minKoord)].style.borderColor = 'white';
+
+	let problem = likeMasterVector(document.getElementsByTagName('td')[getTdIndex(...minKoord)].style.backgroundColor);
+
+	let solution = JSON.parse(document.getElementById('solution').textContent);
+	
+	if (problem != 'Неопределено'){
+		let index = solution.problem.indexOf(problem);
+		let values = [];
+		for (let i = 0; i < solution.solution.length; i ++){
+			values.push(solution.solution[i].value);
+		}
+		let array = [];
+		for (let i = 0; i < solution.solution.length; i ++){
+			array.push(values[i][index]);
+		}
+		solution = 'Решение: ' + solution.solution[array.indexOf(Math.max(...array))].name;
+	}
+	else{
+		solution = '';
+	}
+	document.getElementById('output').getElementsByTagName('label')[0].textContent = 'Проблема: ' + problem;
+	document.getElementById('output').getElementsByTagName('label')[1].textContent = solution;
 }
 
 // Создаем поле и инициализируем его

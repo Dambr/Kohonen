@@ -35,3 +35,11 @@ button{
 	display: inline-block;
 	vertical-align: top;
 }
+#output{
+	display: block;
+	margin-top: 20px;
+	margin-left: 20px;
+	font-family: "Ubuntu";
+	font-size: 16pt;
+	vertical-align: top;
+}

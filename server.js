@@ -30,10 +30,10 @@ app.get('*', function(req, res){
 	})
 	.then(
 		() => {
-			res.render('index.ejs', {array : JSON.stringify(array), size : Math.floor(Math.sqrt(array.length)), parameters: JSON.stringify(require('./parameters.json')), params: require('./parameters.json'), master_vector: require('./master_vector')});
+			res.render('index.ejs', {array : JSON.stringify(array), size : Math.floor(Math.sqrt(array.length)), parameters: JSON.stringify(require('./parameters.json')), params: require('./parameters.json'), master_vector: require('./master_vector.json'), solution: JSON.stringify(require('./solution.json'))});
 		}
 	)
 });
 
 app.listen(server.port, server.host);
-console.log('\t\t\t', server);
+console.log(server);
